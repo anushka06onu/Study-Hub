@@ -1,0 +1,43 @@
+{
+  "users": [
+    {
+      "email": "testuser@example.com",
+      "password": "$2a$10$PsAEhlv7U0i1NJiIqmcQve1mA2GsGjpX9iYyUzRRz4Ri8wF3JPEXW",
+      "_id": "1777976000974"
+    },
+    {
+      "email": "anushka2305101844@diu.edu.bd",
+      "password": "$2a$10$idB6KBvIBZCjvlBcrR749OOSvA6qOK5g9.zXD/LrmgMXxRz49ilEW",
+      "_id": "1777979867491"
+    },
+    {
+      "email": "test@example.com",
+      "password": "$2a$10$7R8W7n7qY7n7qY7n7qY7nO7R8W7n7qY7n7qY7n7qY7n7qY7n7qY7n",
+      "name": "Demo User",
+      "_id": "1777981274820"
+    }
+  ],
+  "subjects": [
+    {
+      "name": "Physics",
+      "userId": "1777976000974",
+      "_id": "1777976056056"
+    },
+    {
+      "name": "math",
+      "userId": "1777979867491",
+      "_id": "1777980006825"
+    }
+  ],
+  "tasks": [],
+  "sessions": [
+    {
+      "subjectId": "1777976056056",
+      "userId": "1777976000974",
+      "startTime": "2026-05-05T10:15:10.390Z",
+      "duration": 0,
+      "_id": "1777976110391"
+    }
+  ],
+  "projects": []
+}

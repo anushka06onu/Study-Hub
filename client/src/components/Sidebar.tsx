@@ -2,11 +2,12 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const items = [
-  { to: '/', label: 'Dashboard' },
+  { to: '/dashboard', label: 'Dashboard' },
   { to: '/subjects', label: 'Subjects' },
   { to: '/tasks', label: 'Tasks' },
   { to: '/analytics', label: 'Analytics' },
   { to: '/calendar', label: 'Calendar' },
+  { to: '/profile', label: 'Profile' },
   { to: '/settings', label: 'Settings' }
 ];
 

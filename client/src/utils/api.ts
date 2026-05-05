@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const client = axios.create({ baseURL: 'http://localhost:5000/api', withCredentials: true });
+const client = axios.create({ baseURL: 'http://localhost:5001/api', withCredentials: true });
 
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -12,7 +12,11 @@ client.interceptors.request.use((config) => {
 
 export const auth = {
   login: (payload: { email: string; password: string }) => client.post('/auth/login', payload),
-  register: (payload: { email: string; password: string; name: string }) => client.post('/auth/register', payload)
+  register: (payload: { email: string; password: string; name: string }) => client.post('/auth/register', payload),
+  verifyRegistration: (data: any) => client.post('/auth/verify-registration', data),
+  updateProfile: (data: any) => client.put('/auth/update-profile', data),
+  forgotPassword: (email: string) => client.post('/auth/forgot-password', { email }),
+  resetPassword: (data: any) => client.post('/auth/reset-password', data)
 };
 
 export const subjects = {

@@ -19,8 +19,8 @@ export default function AIButton() {
     try {
       const { data } = await ai.suggest({ task: prompt });
       setSuggestions(data?.suggestions || []);
-    } catch (e) {
-      setError('Could not fetch suggestions right now.');
+    } catch (e: any) {
+      setError(e.response?.data?.message || 'Could not fetch suggestions right now.');
     } finally {
       setLoading(false);
     }

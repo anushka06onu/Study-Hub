@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { tasks } from '../utils/api';
-import { TaskData } from '../types';
+import { tasks, subjects } from '../utils/api';
+import { TaskData, SubjectData } from '../types';
 
 export default function Tasks() {
   const [list, setList] = useState<TaskData[]>([]);
+  const [subs, setSubs] = useState<SubjectData[]>([]);
   const [title, setTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
 
   useEffect(() => {
-    tasks
-      .list()
-      .then((r) => setList(r.data || []))
-      .catch(() => setList([]));
+    tasks.list().then((r) => setList(r.data || [])).catch(() => setList([]));
+    subjects.list().then((r) => {
+      const data = r.data || [];
+      setSubs(data);
+      if (data.length > 0) setSubjectId(data[0]._id || data[0].id);
+    }).catch(() => setSubs([]));
   }, []);
 
   const addTask = async () => {
@@ -30,6 +33,7 @@ export default function Tasks() {
     }
   };
 
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -44,12 +48,16 @@ export default function Tasks() {
             placeholder="New task"
             className="w-48 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
           />
-          <input
+          <select
             value={subjectId}
             onChange={(e) => setSubjectId(e.target.value)}
-            placeholder="Subject id (optional)"
-            className="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-          />
+            className="w-48 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          >
+            <option value="">Select Subject</option>
+            {subs.map((s) => (
+              <option key={s._id || s.id} value={s._id || s.id}>{s.name}</option>
+            ))}
+          </select>
           <button
             onClick={addTask}
             className="rounded-full bg-indigo-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-400"
@@ -76,7 +84,9 @@ export default function Tasks() {
             >
               <div className="space-y-1">
                 <h3 className="text-lg font-semibold">{task.title || task.name || 'Untitled task'}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">{task.subjectId || 'No subject'}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {subs.find(s => (s._id === task.subjectId || s.id === task.subjectId))?.name || 'No subject'}
+                </p>
                 <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <span className="rounded-full bg-slate-900/5 px-2 py-1 dark:bg-white/5">Due {task.dueDate || 'Soon'}</span>
                   <span className={`rounded-full px-2 py-1 ${task.completed || task.done ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-500 dark:text-emerald-950' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100'}`}>

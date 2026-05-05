@@ -7,7 +7,8 @@ type AuthContextType = {
   user: User;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<void>;
+  verifyRegister: (email: string, otp: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -29,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setToken(null);
       }
     }
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -39,8 +42,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(data.token);
   };
 
-  const register = async (email: string, password: string) => {
-    const { data } = await auth.register({ email, password, name: email.split('@')[0] });
+  const register = async (email: string, password: string, name: string) => {
+    await auth.register({ email, password, name });
+  };
+
+  const verifyRegister = async (email: string, otp: string) => {
+    const { data } = await auth.verifyRegistration({ email, otp });
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
@@ -54,7 +61,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
   };
 
-  return <AuthContext.Provider value={{ user, token, login, register, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, token, login, register, verifyRegister, logout }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

@@ -44,7 +44,10 @@ export default function Login() {
           />
         </div>
         <div>
-          <label className="text-sm text-slate-600 dark:text-slate-300">Password</label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-slate-600 dark:text-slate-300">Password</label>
+            <Link to="/forgot-password" title='forgot password'  className="text-xs text-indigo-500 hover:underline dark:text-indigo-400">Forgot password?</Link>
+          </div>
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -68,6 +71,14 @@ export default function Login() {
           Create one
         </Link>
       </p>
+
+      <div className="mt-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 text-xs text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-300">
+        <p className="font-bold uppercase tracking-wider">Demo Credentials</p>
+        <div className="mt-1 flex justify-between">
+          <span>Email: <span className="font-mono">test@example.com</span></span>
+          <span>Password: <span className="font-mono">password123</span></span>
+        </div>
+      </div>
     </div>
   );
 }

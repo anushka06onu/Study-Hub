@@ -1,10 +1,22 @@
+import mongoose from 'mongoose';
 import Subject from '../models/Subject.js';
+import { mockDb } from '../utils/mockStore.js';
+
+const isDbConnected = () => mongoose.connection.readyState === 1;
 
 export const listSubjects = async (req, res) => {
   try {
-    const query = req.user?.id ? { userId: req.user.id } : {};
-    const items = await Subject.find(query).sort({ createdAt: -1 });
-    res.json(items);
+    const userId = req.user?.id;
+    if (isDbConnected()) {
+      const query = userId ? { userId } : {};
+      const items = await Subject.find(query).sort({ createdAt: -1 });
+      res.json(items);
+    } else {
+      console.warn('DB not connected, using Mock Store for listSubjects');
+      const items = mockDb.subjects.find();
+      const filtered = userId ? items.filter(s => s.userId === userId) : items;
+      res.json(filtered);
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -12,8 +24,15 @@ export const listSubjects = async (req, res) => {
 
 export const createSubject = async (req, res) => {
   try {
-    const created = await Subject.create({ ...req.body, userId: req.user?.id });
-    res.status(201).json(created);
+    const data = { ...req.body, userId: req.user?.id };
+    if (isDbConnected()) {
+      const created = await Subject.create(data);
+      res.status(201).json(created);
+    } else {
+      console.warn('DB not connected, using Mock Store for createSubject');
+      const created = mockDb.subjects.create(data);
+      res.status(201).json(created);
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -21,11 +40,20 @@ export const createSubject = async (req, res) => {
 
 export const updateSubject = async (req, res) => {
   try {
-    const filter = { _id: req.params.id };
-    if (req.user?.id) filter.userId = req.user.id;
-    const updated = await Subject.findOneAndUpdate(filter, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: 'not found' });
-    res.json(updated);
+    const id = req.params.id;
+    const userId = req.user?.id;
+    if (isDbConnected()) {
+      const filter = { _id: id };
+      if (userId) filter.userId = userId;
+      const updated = await Subject.findOneAndUpdate(filter, req.body, { new: true });
+      if (!updated) return res.status(404).json({ message: 'not found' });
+      res.json(updated);
+    } else {
+      console.warn('DB not connected, using Mock Store for updateSubject');
+      const updated = mockDb.subjects.findByIdAndUpdate(id, req.body);
+      if (!updated) return res.status(404).json({ message: 'not found' });
+      res.json(updated);
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -33,12 +61,22 @@ export const updateSubject = async (req, res) => {
 
 export const deleteSubject = async (req, res) => {
   try {
-    const filter = { _id: req.params.id };
-    if (req.user?.id) filter.userId = req.user.id;
-    const deleted = await Subject.findOneAndDelete(filter);
-    if (!deleted) return res.status(404).json({ message: 'not found' });
-    res.json({ ok: true });
+    const id = req.params.id;
+    const userId = req.user?.id;
+    if (isDbConnected()) {
+      const filter = { _id: id };
+      if (userId) filter.userId = userId;
+      const deleted = await Subject.findOneAndDelete(filter);
+      if (!deleted) return res.status(404).json({ message: 'not found' });
+      res.json({ ok: true });
+    } else {
+      console.warn('DB not connected, using Mock Store for deleteSubject');
+      const deleted = mockDb.subjects.findByIdAndDelete(id);
+      if (!deleted) return res.status(404).json({ message: 'not found' });
+      res.json({ ok: true });
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+

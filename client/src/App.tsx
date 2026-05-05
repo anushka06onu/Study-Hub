@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -9,15 +10,17 @@ import Tasks from './pages/Tasks';
 import Analytics from './pages/Analytics';
 import Calendar from './pages/Calendar';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import { useAuth } from './context/AuthContext';
 
 function Shell() {
   const [mode, setMode] = useState<'dark' | 'light'>('dark');
   const location = useLocation();
   const isLanding = location.pathname === '/';
-  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/forgot-password';
   const { token } = useAuth();
 
   useEffect(() => {
@@ -50,20 +53,32 @@ function Shell() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
             </Routes>
           </main>
         ) : (
-          <div className="flex">
+          <div className="flex flex-col md:flex-row">
             <Sidebar />
-            <main className="flex-1 py-6">
-              <Routes>
-                <Route path="/dashboard" element={<Protected component={<Dashboard />} token={token} />} />
-                <Route path="/subjects" element={<Protected component={<Subjects />} token={token} />} />
-                <Route path="/tasks" element={<Protected component={<Tasks />} token={token} />} />
-                <Route path="/analytics" element={<Protected component={<Analytics />} token={token} />} />
-                <Route path="/calendar" element={<Protected component={<Calendar />} token={token} />} />
-                <Route path="/settings" element={<Protected component={<Settings mode={mode} />} token={token} />} />
-              </Routes>
+            <main className="flex-1 py-6 md:px-6">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Routes location={location}>
+                    <Route path="/dashboard" element={<Protected component={<Dashboard />} token={token} />} />
+                    <Route path="/subjects" element={<Protected component={<Subjects />} token={token} />} />
+                    <Route path="/tasks" element={<Protected component={<Tasks />} token={token} />} />
+                    <Route path="/analytics" element={<Protected component={<Analytics />} token={token} />} />
+                    <Route path="/calendar" element={<Protected component={<Calendar />} token={token} />} />
+                    <Route path="/settings" element={<Protected component={<Settings mode={mode} />} token={token} />} />
+                    <Route path="/profile" element={<Protected component={<Profile />} token={token} />} />
+                  </Routes>
+                </motion.div>
+              </AnimatePresence>
             </main>
           </div>
         )}

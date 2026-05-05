@@ -14,10 +14,12 @@ export default function SubjectCard({ subject, onSelect, onDelete, onEdit }: Pro
 
   return (
     <motion.article
-      whileHover={{ y: -4, scale: 1.01 }}
-      className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800/70 dark:bg-slate-900/70"
+      whileHover={{ y: -8, scale: 1.02, boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-lg transition-all dark:border-slate-800/70 dark:bg-slate-900/70"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-sky-500/5 to-purple-500/10 opacity-70" />
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-sky-500/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       <div className="relative flex items-start justify-between">
         <div>
           <h4 className="text-lg font-semibold text-slate-900 dark:text-white">{subject.name}</h4>
