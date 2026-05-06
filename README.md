@@ -15,30 +15,37 @@ Study Hub is a full-stack web application that streamlines the student workflow 
 - **Data Visualization:** Recharts
 - **Authentication:** JWT (JSON Web Tokens)
 - **Password Security:** bcryptjs
+- **AI Integration:** Google Gemini API
 
 ## Features
 
 ### Core Functionality ✅
-- **User Authentication:** Secure registration and login system with JWT-based session management
+- **User Authentication:** Secure registration and login system with JWT, OTP email verification, and password recovery
 - **Subject Management:** Create and organize study subjects with detailed tracking
-- **Task Management:** Create, categorize, and manage tasks by subject
+- **Task Management:** Create, categorize, and manage tasks by subject with Google Gemini AI-powered task recommendations
 - **Study Timer:** Built-in timer for tracking focused study sessions
 - **Dashboard:** Centralized hub for viewing all study-related information
-- **Progress Analytics:** Visual charts and metrics for tracking academic progress
+- **Progress Analytics:** Visual charts and metrics for tracking academic progress with dynamic data export functionality
 - **Theme Support:** Dark and light mode toggle for user preference
-- **Responsive Design:** Optimized for desktop and mobile devices
+- **Responsive Design:** Optimized for desktop, tablet, and mobile devices with fluid animations
 - **Multi-Page Navigation:** Seamless routing across different sections
 
 ### Available Pages
 - Landing Page with feature overview
-- Authentication (Login & Register)
+- Authentication (Login, Register & Password Recovery)
 - Main Dashboard
 - Subject Management
 - Task Tracking
 - Calendar View
 - Analytics Dashboard
-- Settings
+- Settings & Profile Management
 - Subject Detail View
+
+## Demo Account
+
+To quickly explore the application without registering, you can use the following test credentials:
+- **Email:** `test@example.com`
+- **Password:** `password123`
 
 ## Project Structure
 
@@ -91,7 +98,7 @@ npm install
 ```
 
 4. **Configure environment variables**
-Create a `.env` file in the server directory with necessary configuration.
+Create a `.env` file in the server directory with necessary configuration (e.g., MongoDB URI, JWT Secret, Google Gemini API Key).
 
 ## Running the Application
 
@@ -138,12 +145,9 @@ The application will be available at `http://localhost:5173`
 
 ## In Development 🚧
 
-- Enhanced AI-powered task recommendations
-- Detailed session history and analytics
-- Advanced progress reporting
-- Data export functionality
 - Notification system
 - Collaboration features
+- Study group sessions
 
 ## Building for Production
 
