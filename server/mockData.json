@@ -12,7 +12,7 @@
     },
     {
       "email": "test@example.com",
-      "password": "$2a$10$7R8W7n7qY7n7qY7n7qY7nO7R8W7n7qY7n7qY7n7qY7n7qY7n7qY7n",
+      "password": "$2a$10$CEtkWgVuNz7CySR1u3GJzesTMqD6oxJNThMA1gLSKMl/MAGy/jviS",
       "name": "Demo User",
       "_id": "1777981274820"
     }
@@ -27,9 +27,65 @@
       "name": "math",
       "userId": "1777979867491",
       "_id": "1777980006825"
+    },
+    {
+      "name": "math",
+      "userId": "1777981274820",
+      "_id": "1778165148647"
+    },
+    {
+      "name": "CSE101",
+      "userId": "1777981274820",
+      "_id": "1778168253651"
+    },
+    {
+      "name": "ENG102",
+      "userId": "1777981274820",
+      "_id": "1778168686106"
+    },
+    {
+      "name": "SPIC",
+      "userId": "1777981274820",
+      "_id": "1778172996112"
     }
   ],
-  "tasks": [],
+  "tasks": [
+    {
+      "title": "dfgvb",
+      "subjectId": "",
+      "priority": "Low",
+      "done": true,
+      "dueDate": "2026-05-07",
+      "userId": "1777981274820",
+      "_id": "1778167675564",
+      "completed": true
+    },
+    {
+      "title": "Revice chapter 1",
+      "subjectId": "",
+      "priority": "High",
+      "done": false,
+      "dueDate": "2026-05-07",
+      "userId": "1777981274820",
+      "_id": "1778168308719"
+    },
+    {
+      "title": "Take practice quiz for tomorrow is my math exam",
+      "subjectId": "1778165148647",
+      "dueDate": "2026-05-07",
+      "done": false,
+      "priority": "Medium",
+      "userId": "1777981274820",
+      "_id": "1778172907585"
+    },
+    {
+      "title": "exam",
+      "dueDate": "2026-05-28",
+      "subjectId": "1778168686106",
+      "userId": "1777981274820",
+      "_id": "1778173076974"
+    }
+  ],
   "sessions": [
     {
       "subjectId": "1777976056056",
@@ -37,6 +93,35 @@
       "startTime": "2026-05-05T10:15:10.390Z",
       "duration": 0,
       "_id": "1777976110391"
+    },
+    {
+      "subjectId": "1778165148647",
+      "userId": "1777981274820",
+      "startTime": "2026-05-07T14:50:27.590Z",
+      "duration": 1,
+      "_id": "1778165427590"
+    },
+    {
+      "subjectId": "1778165148647",
+      "userId": "1777981274820",
+      "startTime": "2026-05-07T15:36:10.199Z",
+      "duration": 1,
+      "_id": "1778168170199",
+      "endTime": "2026-05-07T15:36:59.536Z"
+    },
+    {
+      "subjectId": "1778168253651",
+      "userId": "1777981274820",
+      "startTime": "2026-05-07T15:43:37.468Z",
+      "duration": 0,
+      "_id": "1778168617468"
+    },
+    {
+      "subjectId": "1778168253651",
+      "userId": "1777981274820",
+      "startTime": "2026-05-07T15:49:25.159Z",
+      "duration": 0,
+      "_id": "1778168965159"
     }
   ],
   "projects": []

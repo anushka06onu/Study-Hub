@@ -42,7 +42,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="mx-auto mt-16 max-w-md space-y-6 rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-2xl dark:border-slate-800 dark:bg-slate-900/80">
+    <div className="w-full max-w-md mx-auto mt-8 sm:mt-16 space-y-6 rounded-3xl border border-slate-200 bg-white/80 p-6 sm:p-8 shadow-2xl dark:border-slate-800 dark:bg-slate-900/80">
       <h1 className="text-2xl font-bold">Forgot Password</h1>
       
       {step === 1 ? (

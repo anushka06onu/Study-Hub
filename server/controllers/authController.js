@@ -15,7 +15,7 @@ const isDbConnected = () => mongoose.connection.readyState === 1;
 // Seed demo user for testing
 (async () => {
   const email = 'test@example.com';
-  const pass = '$2a$10$7R8W7n7qY7n7qY7n7qY7nO7R8W7n7qY7n7qY7n7qY7n7qY7n7qY7n'; // 'password123'
+  const pass = '$2a$10$CEtkWgVuNz7CySR1u3GJzesTMqD6oxJNThMA1gLSKMl/MAGy/jviS'; // 'password123'
   if (!isDbConnected()) {
     const exists = mockDb.users.findOne({ email });
     if (!exists) mockDb.users.create({ email, password: pass, name: 'Demo User' });

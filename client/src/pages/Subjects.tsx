@@ -19,10 +19,12 @@ export default function Subjects() {
     try {
       const { data } = await subjects.create({ name });
       setList((prev) => [data, ...prev]);
+      setName('');
     } catch {
-      setList((prev) => [{ id: `${Date.now()}`, name }, ...prev]);
+      const mock = { id: `${Date.now()}`, name };
+      setList((prev) => [mock, ...prev]);
+      setName('');
     }
-    setName('');
   };
 
   return (

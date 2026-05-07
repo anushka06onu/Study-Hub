@@ -32,13 +32,13 @@ export default function TaskCard({ title, subject, status = 'todo', due = 'Today
       <div className="flex flex-col gap-2">
         <button
           onClick={onComplete}
-          className="rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-800 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-200 dark:hover:text-white"
+          className="rounded-full border border-slate-400 px-3 py-1 text-xs font-medium text-slate-800 transition-all hover:bg-slate-100 hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800"
         >
           {status === 'done' ? 'Mark todo' : 'Mark done'}
         </button>
         <button
           onClick={onDelete}
-          className="rounded-full border border-rose-300 px-3 py-1 text-xs text-rose-700 transition hover:border-rose-400 hover:text-rose-600 dark:border-rose-500/70 dark:text-rose-200"
+          className="rounded-full border border-rose-400 px-3 py-1 text-xs font-medium text-rose-800 transition-all hover:bg-rose-50 hover:border-rose-600 hover:text-rose-600 dark:border-rose-500/70 dark:text-rose-200 dark:hover:bg-rose-950/30"
         >
           Delete
         </button>

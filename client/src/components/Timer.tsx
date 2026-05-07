@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { sessions } from '../utils/api';
+import { SubjectData } from '../types';
 
-type Props = { label?: string; subjectId?: string; onStop?: (seconds: number) => void };
+type Props = { label?: string; subjectId?: string; subjects?: SubjectData[]; onStop?: (seconds: number) => void };
 
-export default function Timer({ label = 'Current Session', subjectId, onStop }: Props) {
+export default function Timer({ label = 'Current Session', subjectId: initialSubjectId, subjects, onStop }: Props) {
   const [seconds, setSeconds] = useState(0);
+  const [selectedSubject, setSelectedSubject] = useState(initialSubjectId || '');
+
+  useEffect(() => {
+    if (initialSubjectId && !selectedSubject) setSelectedSubject(initialSubjectId);
+  }, [initialSubjectId]);
   const [running, setRunning] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -18,12 +24,13 @@ export default function Timer({ label = 'Current Session', subjectId, onStop }: 
 
   const start = async () => {
     setError('');
-    if (!subjectId) {
+    const idToUse = selectedSubject || initialSubjectId;
+    if (!idToUse) {
       setError('Pick a subject to start tracking.');
       return;
     }
     try {
-      const { data } = await sessions.start(subjectId);
+      const { data } = await sessions.start(idToUse);
       setSessionId(data._id || data.id);
     } catch {
       // ignore, still start locally
@@ -60,10 +67,35 @@ export default function Timer({ label = 'Current Session', subjectId, onStop }: 
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-lg dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-white">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center justify-between">
+        <div className="flex-1">
           <p className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-500">{label}</p>
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Focus timer</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Focus timer</h3>
+            {subjects && subjects.length > 0 && !running && (
+              <div className="relative">
+                <select
+                  value={selectedSubject}
+                  onChange={e => setSelectedSubject(e.target.value)}
+                  className="appearance-none mt-1 sm:mt-0 w-full sm:w-40 rounded-full border-2 border-indigo-500/20 bg-indigo-50/50 px-4 py-1.5 text-xs font-semibold text-indigo-700 transition-all hover:border-indigo-500/40 hover:bg-indigo-50 focus:border-indigo-500 focus:outline-none dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+                >
+                  <option value="">Select subject...</option>
+                  {subjects.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name}</option>)}
+                </select>
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500">
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </div>
+              </div>
+            )}
+            {subjects && subjects.length > 0 && running && (
+               <div className="flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1.5 border border-indigo-500/20">
+                 <div className="h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">
+                    {subjects.find(s => String(s._id || s.id) === String(selectedSubject))?.name || 'Focusing'}
+                  </span>
+               </div>
+            )}
+          </div>
           {error && <p className="text-xs text-rose-500 dark:text-rose-400">{error}</p>}
         </div>
         <motion.div

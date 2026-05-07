@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon --ignore mockData.json app.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

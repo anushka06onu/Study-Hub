@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
-import { sessions as sessionApi } from '../utils/api';
-import { SessionData } from '../types';
+import { sessions as sessionApi, subjects as subjectApi } from '../utils/api';
+import { SessionData, SubjectData } from '../types';
 import { useAuth } from '../context/AuthContext';
 
 export default function Analytics() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [subjects, setSubjects] = useState<SubjectData[]>([]);
   const { user } = useAuth();
   const isTestAccount = user?.email === 'test@example.com';
 
   useEffect(() => {
     sessionApi.list().then(r => setSessions(r.data || [])).catch(() => {});
+    subjectApi.list().then(r => setSubjects(r.data || [])).catch(() => {});
   }, []);
 
   const stats = useMemo(() => {
@@ -32,25 +34,51 @@ export default function Analytics() {
     ];
   }, [sessions, isTestAccount]);
 
-  const spark = useMemo(() => {
-    if (isTestAccount && sessions.length === 0) return [40, 55, 70, 60, 90, 75, 88];
-    const days = [0,0,0,0,0,0,0];
+  const subjectStats = useMemo(() => {
+    // Demo data for test account only if no real data
+    if (isTestAccount && sessions.length === 0) {
+      return [
+        { name: 'Physics', duration: 120 },
+        { name: 'Math', duration: 90 },
+        { name: 'History', duration: 45 },
+        { name: 'English', duration: 60 }
+      ];
+    }
+    
+    // Map existing subjects to 0, then add session durations
+    const map = new Map<string, number>();
+    subjects.forEach(s => map.set(s.name, 0));
+    
     sessions.forEach(s => {
-      const d = new Date(s.startTime || s.startedAt || '').getDay();
-      days[d] = (days[d] || 0) + (s.duration || s.minutes || 0);
+      const sub = subjects.find(sub => String(sub._id || sub.id) === String(s.subjectId));
+      const name = sub ? sub.name : 'Unknown';
+      map.set(name, (map.get(name) || 0) + (s.duration || s.minutes || 0));
     });
-    const max = Math.max(...days, 1);
-    return days.map(d => (d/max) * 100);
-  }, [sessions, isTestAccount]);
+    
+    return Array.from(map.entries()).map(([name, duration]) => ({ name, duration }));
+  }, [sessions, subjects, isTestAccount]);
+
+  const maxDuration = Math.max(...subjectStats.map(s => s.duration), 1);
 
   const exportData = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + "Date,Duration (min),Subject\n"
-      + sessions.map(s => `${new Date(s.startTime || '').toLocaleDateString()},${s.duration},${s.subjectId}`).join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const csvRows = ["Date,Duration (min),Subject"];
+    const exportSessions = isTestAccount && sessions.length === 0 
+      ? [{ startTime: new Date().toISOString(), duration: 45, subjectId: 'mock' }] 
+      : sessions;
+    
+    exportSessions.forEach(s => {
+      const sub = subjects.find(sub => sub._id === s.subjectId || sub.id === s.subjectId);
+      const subName = sub ? sub.name.replace(/,/g, '') : 'Unknown';
+      const date = new Date(s.startTime || s.startedAt || '').toLocaleDateString();
+      const mins = s.duration || s.minutes || 0;
+      csvRows.push(`${date},${mins},${subName}`);
+    });
+    
+    const blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "study_sessions.csv");
+    link.href = url;
+    link.download = "study_sessions.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -91,21 +119,20 @@ export default function Analytics() {
         className="rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-slate-800/70 dark:bg-slate-900/70"
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Focus curve</h3>
-          <span className="text-xs text-slate-500">Activity by day of week</span>
+          <h3 className="text-lg font-semibold">Subject focus</h3>
+          <span className="text-xs text-slate-500">Activity by subject (min)</span>
         </div>
-        <div className="mt-8 flex h-48 items-end gap-3">
-          {spark.map((h, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ height: 0 }}
-              animate={{ height: `${Math.max(h, 5)}%` }}
-              className="flex-1 rounded-t-xl bg-gradient-to-t from-indigo-500/20 to-indigo-500 shadow-inner"
-            />
+        <div className="mt-8 flex h-48 items-end gap-3 overflow-x-auto">
+          {subjectStats.map((item, idx) => (
+            <div key={idx} className="flex flex-1 flex-col items-center justify-end min-w-[40px]">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${Math.max((item.duration / maxDuration) * 100, 5)}%` }}
+                className="w-full rounded-t-xl bg-gradient-to-t from-indigo-500/20 to-indigo-500 shadow-inner"
+              />
+              <span className="mt-2 text-[10px] uppercase tracking-widest text-slate-400 truncate max-w-[60px]">{item.name}</span>
+            </div>
           ))}
-        </div>
-        <div className="mt-2 flex justify-between px-1 text-[10px] uppercase tracking-widest text-slate-400">
-          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
         </div>
       </motion.div>
     </section>

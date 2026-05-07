@@ -18,7 +18,11 @@ export default function Calendar() {
 
   useEffect(() => {
     taskApi.list().then(r => setTasks(r.data || [])).catch(() => {});
-    subjectApi.list().then(r => setSubjects(r.data || [])).catch(() => {});
+    subjectApi.list().then(r => {
+      const data = r.data || [];
+      setSubjects(data);
+      if (data.length > 0 && !newSub) setNewSub(data[0]._id || data[0].id);
+    }).catch(() => {});
   }, []);
 
   const entries = useMemo(() => {
@@ -113,10 +117,10 @@ export default function Calendar() {
                 />
                 <input 
                   required
-                  type="datetime-local"
+                  type="date"
                   value={newDate}
                   onChange={e => setNewDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-950"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-950 dark:[color-scheme:dark]"
                 />
                 <select 
                   required

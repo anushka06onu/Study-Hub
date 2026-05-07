@@ -17,6 +17,7 @@ export type TaskData = {
   completed?: boolean;
   dueDate?: string;
   createdAt?: string;
+  priority?: string;
 };
 
 export type SessionData = { id?: string; _id?: string; subjectId?: string; startedAt?: string; startTime?: string; endedAt?: string; minutes?: number; duration?: number };

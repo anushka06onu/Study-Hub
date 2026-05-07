@@ -18,11 +18,35 @@ export default function Dashboard() {
   const isTestAccount = user?.email === 'test@example.com';
 
   useEffect(() => {
-    subjectApi.list().then((r) => setSubjects(r.data || [])).catch(() => setSubjects([]));
-    taskApi.list().then((r) => setTasks(r.data || [])).catch(() => setTasks([]));
+    subjectApi.list().then((r) => {
+      const data = r.data || [];
+      if (isTestAccount && data.length === 0) {
+        setSubjects([
+          { name: 'Physics', _id: 'mock1', id: 'mock1' },
+          { name: 'Math', _id: 'mock2', id: 'mock2' },
+          { name: 'History', _id: 'mock3', id: 'mock3' },
+          { name: 'English', _id: 'mock4', id: 'mock4' }
+        ]);
+      } else {
+        setSubjects(data);
+      }
+    }).catch(() => setSubjects([]));
+
+    taskApi.list().then((r) => {
+      const data = r.data || [];
+      if (isTestAccount && data.length === 0) {
+        setTasks([
+          { title: 'Physics Lab Report', subjectId: 'mock1', priority: 'High', completed: false, done: false, dueDate: '2026-05-08' },
+          { title: 'Math Problem Set 4', subjectId: 'mock2', priority: 'Medium', completed: false, done: false, dueDate: '2026-05-09' }
+        ]);
+      } else {
+        setTasks(data);
+      }
+    }).catch(() => setTasks([]));
+
     sessionApi.list().then((r) => setSessions(r.data || [])).catch(() => setSessions([]));
     projectApi.list().catch(() => undefined);
-  }, []);
+  }, [isTestAccount]);
 
   const chartData = useMemo(() => {
     if (!sessions.length && !isTestAccount) return [];
@@ -92,10 +116,10 @@ export default function Dashboard() {
           className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800/70 dark:bg-slate-900/70 md:col-span-2"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Subjects</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Subjects</h3>
             <div className="flex items-center gap-2">
               <AIButton />
-              <span className="text-xs text-slate-500 dark:text-slate-400">{subjects.length} subjects</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{subjects.length} subjects</span>
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -116,7 +140,7 @@ export default function Dashboard() {
         <motion.div
           className="rounded-2xl border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-800/70 dark:bg-slate-900/70"
         >
-          <Timer subjectId={(subjects[0]?._id as string) || subjects[0]?.id} onStop={() => sessionApi.list().then((r) => setSessions(r.data || []))} />
+          <Timer subjects={subjects} onStop={() => sessionApi.list().then((r) => setSessions(r.data || []))} />
         </motion.div>
       </div>
 
@@ -124,12 +148,16 @@ export default function Dashboard() {
         <motion.div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800/70 dark:bg-slate-900/70 md:col-span-2">
           <h3 className="text-lg font-semibold">Next tasks</h3>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-            {tasks.length === 0 ? (
-              <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                No tasks yet.
-              </div>
-            ) : (
-              tasks.slice(0, 4).map((task) => (
+            {(() => {
+              const pendingTasks = tasks.filter(t => !t.completed && !t.done);
+              if (pendingTasks.length === 0) {
+                return (
+                  <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                    No pending tasks. <a href="/tasks" className="text-indigo-500 hover:underline">Add tasks here!</a>
+                  </div>
+                );
+              }
+              return pendingTasks.slice(0, 4).map((task) => (
                 <TaskCard
                   key={task._id || task.id}
                   title={task.title || task.name || 'Untitled task'}
@@ -139,8 +167,8 @@ export default function Dashboard() {
                   onComplete={() => handleTaskComplete(task._id || task.id)}
                   onDelete={() => handleTaskDelete(task._id || task.id)}
                 />
-              ))
-            )}
+              ));
+            })()}
           </div>
         </motion.div>
 

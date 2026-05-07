@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ai } from '../utils/api';
-import TaskCard from './TaskCard';
+import { tasks, subjects as subjectApi, ai } from '../utils/api';
+import { SubjectData, TaskData } from '../types';
 
 type Suggestion = { title: string; subject?: string; due?: string };
 
@@ -10,7 +10,18 @@ export default function AIButton() {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [subs, setSubs] = useState<SubjectData[]>([]);
+  const [selectedSub, setSelectedSub] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      subjectApi.list().then(r => {
+        setSubs(r.data || []);
+        if (r.data?.length > 0) setSelectedSub(r.data[0]._id || r.data[0].id);
+      }).catch(() => {});
+    }
+  }, [open]);
 
   const submit = async () => {
     if (!prompt.trim()) return;
@@ -18,11 +29,32 @@ export default function AIButton() {
     setError('');
     try {
       const { data } = await ai.suggest({ task: prompt });
-      setSuggestions(data?.suggestions || []);
+      if (data && data.suggestions) {
+        setSuggestions(data.suggestions);
+      } else {
+        throw new Error('No suggestions returned');
+      }
     } catch (e: any) {
-      setError(e.response?.data?.message || 'Could not fetch suggestions right now.');
+      console.error('AI Button Error:', e);
+      setError('AI is busy right now. Please try again or use manual planning.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addTask = async (s: Suggestion) => {
+    try {
+      const payload: TaskData = {
+        title: s.title,
+        subjectId: selectedSub,
+        dueDate: new Date().toISOString().split('T')[0],
+        done: false,
+        priority: 'Medium'
+      };
+      await tasks.create(payload);
+      setSuggestions(prev => prev.filter(item => item.title !== s.title));
+    } catch (err) {
+      setError('Failed to create task');
     }
   };
 
@@ -74,11 +106,35 @@ export default function AIButton() {
               </div>
 
               {suggestions.length > 0 && (
-                <div className="space-y-2 pt-2">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Suggested tasks</p>
-                  <div className="grid gap-2">
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Suggested tasks</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-500">To Subject:</span>
+                      <select 
+                        value={selectedSub}
+                        onChange={e => setSelectedSub(e.target.value)}
+                        className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-[10px] text-white focus:outline-none"
+                      >
+                        <option value="">No subject</option>
+                        {subs.map(sb => <option key={sb._id || sb.id} value={sb._id || sb.id}>{sb.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid gap-2 max-h-[200px] overflow-y-auto pr-1">
                     {suggestions.map((s, i) => (
-                      <TaskCard key={`${s.title}-${i}`} title={s.title} subject={s.subject || 'AI'} due={s.due || 'Soon'} status="todo" />
+                      <div key={i} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/50">
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-medium">{s.title}</p>
+                          <p className="text-[10px] text-slate-500">{s.due || 'Upcoming'}</p>
+                        </div>
+                        <button 
+                          onClick={() => addTask(s)}
+                          className="rounded-full bg-indigo-500 px-3 py-1 text-[10px] font-bold text-white shadow hover:bg-indigo-400"
+                        >
+                          Add
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>

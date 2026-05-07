@@ -27,7 +27,7 @@ export default function Login() {
   };
 
   return (
-    <div className="mx-auto mt-16 max-w-md space-y-6 rounded-3xl border border-slate-200 bg-white/80 p-8 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900/80 dark:text-white">
+    <div className="w-full max-w-md mx-auto mt-8 sm:mt-16 space-y-6 rounded-3xl border border-slate-200 bg-white/80 p-6 sm:p-8 text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900/80 dark:text-white">
       <div>
         <p className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-500">Welcome back</p>
         <h1 className="text-2xl font-semibold">Login to StudyHub</h1>
