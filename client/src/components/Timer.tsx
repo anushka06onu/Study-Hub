@@ -66,41 +66,41 @@ export default function Timer({ label = 'Current Session', subjectId: initialSub
   const clock = new Date(seconds * 1000).toISOString().substring(11, 19);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-lg dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-white">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center justify-between">
-        <div className="flex-1">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-500">{label}</p>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Focus timer</h3>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-lg dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-white">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{label}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h3 className="whitespace-nowrap text-lg font-bold text-slate-900 dark:text-white">Focus timer</h3>
             {subjects && subjects.length > 0 && !running && (
-              <div className="relative">
+              <div className="relative inline-block">
                 <select
                   value={selectedSubject}
                   onChange={e => setSelectedSubject(e.target.value)}
-                  className="appearance-none mt-1 sm:mt-0 w-full sm:w-40 rounded-full border-2 border-indigo-500/20 bg-indigo-50/50 px-4 py-1.5 text-xs font-semibold text-indigo-700 transition-all hover:border-indigo-500/40 hover:bg-indigo-50 focus:border-indigo-500 focus:outline-none dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+                  className="appearance-none w-36 rounded-full border-2 border-indigo-500/20 bg-indigo-50/50 pl-3 pr-8 py-1 text-[11px] font-bold text-indigo-700 transition-all hover:border-indigo-500/40 focus:border-indigo-500 focus:outline-none dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
                 >
                   <option value="">Select subject...</option>
                   {subjects.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name}</option>)}
                 </select>
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500">
+                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-indigo-500">
                   <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                 </div>
               </div>
             )}
             {subjects && subjects.length > 0 && running && (
-               <div className="flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1.5 border border-indigo-500/20">
-                 <div className="h-2 w-2 animate-pulse rounded-full bg-indigo-500" />
-                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">
-                    {subjects.find(s => String(s._id || s.id) === String(selectedSubject))?.name || 'Focusing'}
-                  </span>
+               <div className="flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-2.5 py-1 border border-indigo-500/20">
+                 <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-500" />
+                 <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-300 uppercase tracking-tighter">
+                   {subjects.find(s => String(s._id || s.id) === String(selectedSubject))?.name || 'Focusing'}
+                 </span>
                </div>
             )}
           </div>
-          {error && <p className="text-xs text-rose-500 dark:text-rose-400">{error}</p>}
+          {error && <p className="mt-1 text-[10px] font-medium text-rose-500 dark:text-rose-400">{error}</p>}
         </div>
         <motion.div
-          animate={{ scale: running ? 1.05 : 1, opacity: running ? 1 : 0.7 }}
-          className="rounded-full bg-slate-900/5 px-4 py-2 text-lg font-mono text-indigo-600 dark:bg-white/5 dark:text-indigo-100"
+          animate={{ scale: running ? 1.02 : 1 }}
+          className="flex shrink-0 items-center justify-center rounded-xl bg-slate-900/5 px-3 py-1.5 text-xl font-black tabular-nums text-indigo-600 dark:bg-white/5 dark:text-indigo-100"
         >
           {clock}
         </motion.div>
