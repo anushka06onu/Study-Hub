@@ -42,8 +42,10 @@ const start = async () => {
   } catch (err) {
     console.warn('Mongo connection failed (scaffold mode):', err.message);
   }
-  const port = process.env.PORT || 5000;
-  app.listen(port, () => console.log(`API listening on ${port}`));
+  const port = process.env.PORT || 5001;
+  if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => console.log(`API listening on ${port}`));
+  }
 };
 
 start();
