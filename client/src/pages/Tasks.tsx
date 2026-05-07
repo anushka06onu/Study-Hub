@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { tasks, subjects } from '../utils/api';
 import { TaskData, SubjectData } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 export default function Tasks() {
   const [list, setList] = useState<TaskData[]>([]);
