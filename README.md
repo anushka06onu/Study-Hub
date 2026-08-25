@@ -1,171 +1,300 @@
-# Study Hub 📚
+# Study Hub
 
-A comprehensive study management platform designed to help students organize tasks, track study sessions, and monitor academic progress across different subjects.
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 
-## Overview
+Study Hub is a full-stack study-management platform for organizing subjects and tasks, recording focused study sessions, and reviewing progress through interactive analytics. It combines a React and TypeScript client with an Express API, MongoDB persistence, JWT-based authentication, and optional AI-assisted task suggestions.
 
-Study Hub is a full-stack web application that streamlines the student workflow by providing an intuitive interface for managing coursework, tracking time spent on studies, and visualizing learning progress through interactive analytics.
+> **Project status:** Academic prototype. The core planning, tracking, analytics, and persistence workflows are implemented, but the authentication recovery flow and development fallback mode require hardening before production use. See [Current Limitations](#current-limitations).
 
-## Tech Stack
+## Problem
 
-- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS
-- **Backend:** Express.js, Node.js
-- **Database:** MongoDB with Mongoose
-- **UI Components:** Radix UI, Framer Motion
-- **Data Visualization:** Recharts
-- **Authentication:** JWT (JSON Web Tokens)
-- **Password Security:** bcryptjs
-- **AI Integration:** Google Gemini API
+Students often manage coursework, deadlines, study timers, and progress records across unrelated tools. This makes it difficult to answer practical questions such as:
 
-## Features
+- Which tasks require attention first?
+- How much focused time has been spent on each subject?
+- Is study activity improving over time?
+- What specific next steps could turn a broad study goal into actionable work?
 
-### Core Functionality ✅
-- **User Authentication:** Secure registration and login system with JWT, OTP email verification, and password recovery
-- **Subject Management:** Create and organize study subjects with detailed tracking
-- **Task Management:** Create, categorize, and manage tasks by subject with Google Gemini AI-powered task recommendations
-- **Study Timer:** Built-in timer for tracking focused study sessions
-- **Dashboard:** Centralized hub for viewing all study-related information
-- **Progress Analytics:** Visual charts and metrics for tracking academic progress with dynamic data export functionality
-- **Theme Support:** Dark and light mode toggle for user preference
-- **Responsive Design:** Optimized for desktop, tablet, and mobile devices with fluid animations
-- **Multi-Page Navigation:** Seamless routing across different sections
+Study Hub brings these workflows into one responsive workspace.
 
-### Available Pages
-- Landing Page with feature overview
-- Authentication (Login, Register & Password Recovery)
-- Main Dashboard
-- Subject Management
-- Task Tracking
-- Calendar View
-- Analytics Dashboard
-- Settings & Profile Management
-- Subject Detail View
+## Implemented Features
 
-## Demo Account
+### Study organization
 
-To quickly explore the application without registering, you can use the following test credentials:
-- **Email:** `test@example.com`
-- **Password:** `password123`
+- Create, view, edit, and delete subjects
+- Create and organize tasks by subject
+- Mark tasks as completed
+- Track projects and their progress
+- Review tasks through dashboard, list, and calendar-oriented views
 
-## Project Structure
+### Focus-session tracking
 
+- Start, pause, and end study sessions
+- Associate sessions with subjects
+- Store session duration and timestamps
+- Summarize study activity through charts and progress indicators
+- Export session information as CSV
+
+### Accounts and personalization
+
+- User registration and login
+- BCrypt password hashing
+- JWT-based access to protected study-resource routes
+- Profile and password-update interface
+- Light and dark themes
+- Responsive desktop, tablet, and mobile layouts
+
+### Assisted planning
+
+- Optional Google Gemini integration for generating structured study-task ideas
+- Rule-based fallback suggestions when the external AI service is unavailable
+- Ability to convert a suggestion into a saved task
+
+The AI component is an external model integration, not a custom-trained machine-learning model.
+
+## System Architecture
+
+```mermaid
+flowchart LR
+    U[Student] --> C[React + TypeScript client]
+    C --> AC[Authentication context]
+    AC --> API[Express REST API]
+    API --> MW[JWT middleware]
+    MW --> SC[Subject, task, project and session controllers]
+    SC --> DB[(MongoDB through Mongoose)]
+    SC -. development fallback .-> MS[(Local mock store)]
+    C --> CH[Recharts analytics]
+    API --> AI[Task-suggestion service]
+    AI --> GM[Google Gemini API]
+    AI -. unavailable .-> FB[Template fallback]
 ```
+
+## Application Workflow
+
+1. A user registers or signs in.
+2. The server issues a time-limited JWT after successful authentication.
+3. The client attaches the token to protected API requests.
+4. Subjects, tasks, projects, and sessions are stored with the authenticated user ID.
+5. Session records are aggregated into dashboard and analytics views.
+6. Users may request task suggestions and selectively save useful suggestions.
+
+## Technology Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Client | React 18, TypeScript | Component-based user interface |
+| Routing | React Router | Public and application navigation |
+| Styling | Tailwind CSS | Responsive layouts and theming |
+| Motion | Framer Motion | Interface transitions |
+| Visualization | Recharts | Study-time and progress charts |
+| API client | Axios | REST communication and token attachment |
+| Server | Node.js, Express | Application API and business logic |
+| Database | MongoDB, Mongoose | User-scoped persistent records |
+| Authentication | JWT, BCrypt | Session tokens and password hashing |
+| AI integration | Google Gemini REST API | Optional task-idea generation |
+| Deployment | Vercel configuration | Static client and serverless API routing |
+
+## Repository Structure
+
+```text
 Study-Hub/
-├── client/                      # React frontend application
+├── client/
 │   ├── src/
-│   │   ├── components/         # Reusable UI components
-│   │   ├── pages/              # Application pages
-│   │   ├── context/            # React Context for state management
-│   │   ├── charts/             # Data visualization components
-│   │   ├── utils/              # Utility functions and API calls
-│   │   └── index.css           # Global styling
+│   │   ├── charts/             # Study analytics visualizations
+│   │   ├── components/         # Shared interface components
+│   │   ├── context/            # Authentication state
+│   │   ├── pages/              # Dashboard and feature pages
+│   │   ├── utils/              # Configured API client
+│   │   ├── App.tsx             # Routing and application layout
+│   │   ├── main.tsx            # Client entry point
+│   │   └── types.ts            # Shared client-side types
+│   ├── package.json
+│   └── vite.config.ts
+├── server/
+│   ├── controllers/            # Authentication and resource logic
+│   ├── middleware/             # JWT verification
+│   ├── models/                 # Mongoose schemas
+│   ├── routes/                 # REST endpoint definitions
+│   ├── utils/                  # Development fallback store
+│   ├── app.js                  # Express application entry point
 │   └── package.json
-├── server/                      # Express.js backend API
-│   ├── controllers/            # Business logic for routes
-│   ├── models/                 # MongoDB data schemas
-│   ├── routes/                 # API endpoint definitions
-│   ├── middleware/             # Authentication and custom middleware
-│   ├── app.js                  # Express application setup
-│   └── package.json
+├── package.json
+├── vercel.json
 └── README.md
 ```
 
-## Installation
+## Data Model
+
+```mermaid
+erDiagram
+    USER ||--o{ SUBJECT : owns
+    USER ||--o{ TASK : owns
+    USER ||--o{ PROJECT : owns
+    USER ||--o{ SESSION : records
+    SUBJECT ||--o{ TASK : groups
+    SUBJECT ||--o{ SESSION : categorizes
+
+    USER {
+        ObjectId id
+        string email
+        string passwordHash
+        string name
+    }
+    SUBJECT {
+        ObjectId id
+        ObjectId userId
+        string name
+        number totalStudyTime
+    }
+    TASK {
+        ObjectId id
+        ObjectId userId
+        ObjectId subjectId
+        string name
+        boolean completed
+    }
+    PROJECT {
+        ObjectId id
+        ObjectId userId
+        string name
+        number progress
+        date deadline
+    }
+    SESSION {
+        ObjectId id
+        ObjectId userId
+        ObjectId subjectId
+        date startTime
+        date endTime
+        number duration
+    }
+```
+
+## API Overview
+
+| Area | Method and route | Purpose | Access |
+|---|---|---|---|
+| Authentication | `POST /api/auth/register` | Begin registration | Public |
+| Authentication | `POST /api/auth/verify-registration` | Complete registration | Public |
+| Authentication | `POST /api/auth/login` | Authenticate and obtain a token | Public |
+| Authentication | `PUT /api/auth/update-profile` | Update the current profile/password | Authenticated |
+| Subjects | `GET/POST /api/subjects` | List or create subjects | Authenticated |
+| Subjects | `PUT/DELETE /api/subjects/:id` | Modify or delete a subject | Authenticated |
+| Tasks | `GET/POST /api/tasks` | List or create tasks | Authenticated |
+| Tasks | `PUT/DELETE /api/tasks/:id` | Modify or delete a task | Authenticated |
+| Tasks | `POST /api/tasks/:id/complete` | Toggle completion | Authenticated |
+| Sessions | `GET/POST /api/sessions` | List or create session records | Authenticated |
+| Sessions | `POST /api/sessions/start` | Begin a timed session | Authenticated |
+| Sessions | `POST /api/sessions/pause` | Save elapsed duration | Authenticated |
+| Sessions | `POST /api/sessions/end` | Finish a session | Authenticated |
+| Projects | `GET/POST /api/projects` | List or create projects | Authenticated |
+| AI assistance | `POST /api/ai/suggest` | Generate task suggestions | Prototype endpoint |
+
+## Local Development
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- MongoDB instance (local or cloud)
 
-### Setup Instructions
+- Node.js 18 or newer
+- npm
+- MongoDB Community Server or MongoDB Atlas
+- A Google Gemini API key only if AI-generated suggestions are required
 
-1. **Clone the repository**
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/anushka06onu/Study-Hub.git
 cd Study-Hub
 ```
 
-2. **Install frontend dependencies**
-```bash
-cd client
-npm install
+### 2. Configure the server
+
+Create `server/.env`:
+
+```env
+PORT=5001
+MONGO_URI=mongodb://127.0.0.1:27017/studyhub
+JWT_SECRET=replace_with_a_long_random_secret
+GEMINI_API_KEY=optional_gemini_api_key
+NODE_ENV=development
 ```
 
-3. **Install backend dependencies**
-```bash
-cd ../server
-npm install
-```
+Never commit `.env` files or API keys.
 
-4. **Configure environment variables**
-Create a `.env` file in the server directory with necessary configuration (e.g., MongoDB URI, JWT Secret, Google Gemini API Key).
+### 3. Install and start the backend
 
-## Running the Application
-
-### Backend
 ```bash
 cd server
+npm ci
 npm run dev
 ```
-The API server will run on `http://localhost:3000`
 
-### Frontend
+The API is available at `http://localhost:5001` by default.
+
+### 4. Configure the client
+
+Create `client/.env.local`:
+
+```env
+VITE_API_URL=http://localhost:5001/api
+```
+
+### 5. Install and start the client
+
 ```bash
 cd client
+npm ci
 npm run dev
 ```
-The application will be available at `http://localhost:5173`
 
-## API Endpoints
+The Vite development server normally opens at `http://localhost:5173`.
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
+### 6. Create a production client build
 
-### Subjects
-- `GET /api/subjects` - Retrieve all subjects
-- `POST /api/subjects` - Create a new subject
-- `GET /api/subjects/:id` - Get subject details
-- `PUT /api/subjects/:id` - Update subject
-- `DELETE /api/subjects/:id` - Delete subject
-
-### Tasks
-- `GET /api/tasks` - Retrieve all tasks
-- `POST /api/tasks` - Create a new task
-- `PUT /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
-
-### Sessions
-- `GET /api/sessions` - Retrieve study sessions
-- `POST /api/sessions` - Create study session record
-
-### Users
-- `GET /api/users/:id` - Get user profile
-- `PUT /api/users/:id` - Update user profile
-
-## In Development 🚧
-
-- Notification system
-- Collaboration features
-- Study group sessions
-
-## Building for Production
-
-### Frontend Build
 ```bash
 cd client
 npm run build
 ```
 
-### Deployment
-The application can be deployed using:
-- **Frontend:** Vercel, Netlify, or any static hosting service
-- **Backend:** Heroku, Railway, or any Node.js hosting platform
+## Configuration Notes
+
+- `JWT_SECRET` must be explicitly configured in every deployed environment.
+- MongoDB should be required in production; local JSON fallback storage is intended only for development demonstrations.
+- If `GEMINI_API_KEY` is missing or the external request fails, the current service returns template-based suggestions.
+- Production CORS configuration should allow only the deployed client origin.
+
+## Current Limitations
+
+- Pending registration information is stored in process memory and is unsuitable for serverless or multi-instance production deployment.
+- The client task type and the Mongoose task schema require final alignment for fields such as title, priority, and due date.
+- The AI suggestion endpoint requires authentication, rate limiting, and validation before using a paid API key publicly.
+- The repository does not currently include an actual license file.
+
+
+
+## Responsible AI Use
+
+AI-generated task ideas may be incomplete or unsuitable for a particular course. They should be treated as editable planning suggestions, not authoritative academic instructions. Study Hub does not send grades, private notes, or academic records to Gemini unless those details are included by the user in a suggestion request.
+
+## Roadmap
+
+- Multi-semester study goals and weekly planning
+- Reminders and deadline notifications
+- Editable AI suggestions with user feedback
+- Calendar import/export
+- Improved subject-level comparisons
+- Accessible keyboard navigation and screen-reader testing
+- Optional collaboration after a dedicated permissions model is designed
+
+## Author
+
+Developed by **Fateha Hossain Anushka**.
+
+- [GitHub](https://github.com/anushka06onu)
+- [Portfolio](https://fatehahossainanushka.vercel.app/)
 
 ## License
 
-This project is open source and available under the MIT License.
-
-## Support
-
-For issues, questions, or suggestions, please open an issue in the repository.
+No license file is currently included. Add an explicit license before describing the repository as open source or permitting reuse.
