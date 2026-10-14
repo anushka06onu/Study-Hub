@@ -18,55 +18,44 @@ const isDbConnected = () => mongoose.connection.readyState === 1;
 (async () => {
   const email = 'test@example.com';
   const pass = '$2a$10$CEtkWgVuNz7CySR1u3GJzesTMqD6oxJNThMA1gLSKMl/MAGy/jviS'; // 'password123'
-  if (!isDbConnected()) {
+  if (process.env.NODE_ENV !== 'production' && !isDbConnected()) {
     const exists = mockDb.users.findOne({ email });
     if (!exists) mockDb.users.create({ email, password: pass, name: 'Demo User' });
   }
 })();
 
-let pendingUsers = {}; // Store unverified registration data
+const pendingUsers = new Map(); // Development only: no email delivery exists yet.
 
 export const sendRegistrationOTP = async (req, res) => {
+  if (process.env.NODE_ENV === 'production') return res.status(503).json({ message: 'Registration is unavailable until email verification delivery is configured.' });
   const { email, password, name } = req.body;
-  if (!email || !password) return res.status(400).json({ message: 'email and password required' });
-  
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  pendingUsers[email] = { password, name, otp, createdAt: Date.now() };
-  
-  console.log('\n' + '='.repeat(50));
-  console.log(`[AUTH] REGISTRATION OTP FOR ${email}: ${otp}`);
-  console.log('='.repeat(50) + '\n');
-  res.json({ message: 'OTP sent to your email for registration' });
+  if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) return res.status(400).json({ message: 'Valid email and an 8 to 72 byte password are required.' });
+  const normalizedEmail = email.trim().toLowerCase();
+  for (const [key, value] of pendingUsers) if (value.expiresAt <= Date.now()) pendingUsers.delete(key);
+  if (pendingUsers.size >= 1000 && !pendingUsers.has(normalizedEmail)) return res.status(429).json({ message: 'Too many pending requests. Try later.' });
+  const otp = String(randomInt(100000, 1000000));
+  pendingUsers.set(normalizedEmail, { password: await bcrypt.hash(password, 10), name, code: otp, expiresAt: Date.now() + 300000, attempts: 0 });
+  console.log(`[DEVELOPMENT ONLY] Registration OTP for ${normalizedEmail}: ${otp}`);
+  res.json({ message: 'Development OTP generated in the server console. No email was sent.' });
 };
 
 export const verifyRegistration = async (req, res) => {
+  if (process.env.NODE_ENV === 'production') return res.status(503).json({ message: 'Registration is unavailable until email verification delivery is configured.' });
   const { email, otp } = req.body;
-  const pending = pendingUsers[email];
-  
-  if (!pending) return res.status(400).json({ message: 'No registration pending for this email' });
-  if (pending.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
-  
-  try {
-    const { password, name } = pending;
-    let user;
-    if (isDbConnected()) {
-      const exists = await User.findOne({ email });
-      if (exists) return res.status(409).json({ message: 'user exists' });
-      const hash = await bcrypt.hash(password, 10);
-      user = await User.create({ email, password: hash, name });
-    } else {
-      const exists = mockDb.users.findOne({ email });
-      if (exists) return res.status(409).json({ message: 'user exists' });
-      const hash = await bcrypt.hash(password, 10);
-      user = mockDb.users.create({ email, password: hash, name });
-    }
-
-    delete pendingUsers[email];
-    const token = buildToken(user);
-    res.status(201).json({ message: 'Registration Successful', user: { id: user._id, email: user.email, name: user.name }, token });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const pending = pendingUsers.get(normalizedEmail);
+  if (!pending || pending.expiresAt <= Date.now() || pending.attempts >= 5 || pending.code !== otp) {
+    if (pending) { pending.attempts++; if (pending.attempts >= 5 || pending.expiresAt <= Date.now()) pendingUsers.delete(normalizedEmail); }
+    return res.status(400).json({ message: 'Invalid or expired registration request.' });
   }
+  pendingUsers.delete(normalizedEmail);
+  try {
+    const exists = isDbConnected() ? await User.findOne({ email: normalizedEmail }) : mockDb.users.findOne({ email: normalizedEmail });
+    if (exists) return res.status(409).json({ message: 'User exists' });
+    const data = { email: normalizedEmail, password: pending.password, name: pending.name };
+    const user = isDbConnected() ? await User.create(data) : mockDb.users.create(data);
+    res.status(201).json({ message: 'Registration Successful', user: { id: user._id, email: user.email, name: user.name }, token: buildToken(user) });
+  } catch { res.status(400).json({ message: 'Registration failed.' }); }
 };
 
 export const register = async (req, res) => {
@@ -181,4 +170,5 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 

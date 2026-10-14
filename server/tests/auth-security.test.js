@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getSigningSecret, validateResetRequest } from '../utils/authSecurity.js';
+import { getSigningSecret, validateResetRequest, productionReady } from '../utils/authSecurity.js';
 
 test('reset rejects missing, expired, exhausted, and mismatched recovery codes', () => {
   const body={email:'audit@example.test',otp:'123456',newPassword:'valid-test-password'};
@@ -17,10 +17,19 @@ test('production requires an explicitly configured signing secret', () => {
   try {
     process.env.NODE_ENV='production'; delete process.env.JWT_SECRET;
     assert.throws(getSigningSecret,/must be configured/);
-    process.env.JWT_SECRET='placeholder-for-test-only';
-    assert.equal(getSigningSecret(),'placeholder-for-test-only');
+    process.env.JWT_SECRET='placeholder-for-test-only-at-least-32-characters';
+    assert.equal(getSigningSecret(),'placeholder-for-test-only-at-least-32-characters');
   } finally {
     if(oldMode===undefined)delete process.env.NODE_ENV;else process.env.NODE_ENV=oldMode;
     if(oldSecret===undefined)delete process.env.JWT_SECRET;else process.env.JWT_SECRET=oldSecret;
   }
+});
+
+
+test('production cannot fall back to a mock database or weak JWT secret', () => {
+ const env = {NODE_ENV:'production', JWT_SECRET:'x'.repeat(32)};
+ assert.equal(productionReady(0,env),false);
+ assert.equal(productionReady(1,env),true);
+ assert.equal(productionReady(1,{...env,JWT_SECRET:'weak'}),false);
+ assert.equal(productionReady(0,{NODE_ENV:'development'}),true);
 });

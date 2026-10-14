@@ -12,6 +12,7 @@ let db = {
 };
 
 const load = () => {
+  if (process.env.NODE_ENV === 'production') return;
   if (fs.existsSync(DATA_FILE)) {
     try {
       const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
@@ -23,6 +24,7 @@ const load = () => {
 };
 
 const save = () => {
+  if (process.env.NODE_ENV === 'production') return;
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
   } catch (e) {
@@ -32,7 +34,7 @@ const save = () => {
 
 load();
 
-export const mockDb = {
+const developmentStore = {
   users: {
     find: (query) => {
       if (query && query.email) return db.users.find(u => u.email === query.email);
@@ -159,3 +161,11 @@ export const mockDb = {
 
 
 
+
+
+export const mockDb = new Proxy(developmentStore, {
+  get(target, key) {
+    if (process.env.NODE_ENV === "production") throw new Error("Mock storage is disabled in production");
+    return target[key];
+  }
+});
