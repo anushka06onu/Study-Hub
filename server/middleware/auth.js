@@ -1,3 +1,4 @@
+import { getSigningSecret } from '../utils/authSecurity.js';
 import jwt from 'jsonwebtoken';
 
 export default function (req, res, next) {
@@ -5,7 +6,7 @@ export default function (req, res, next) {
   if (!authHeader) return res.status(401).json({ message: 'no auth' });
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'studyhub-dev-secret');
+    const decoded = jwt.verify(token, getSigningSecret());
     req.user = decoded;
     next();
   } catch {

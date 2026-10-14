@@ -1,4 +1,6 @@
 import bcrypt from 'bcryptjs';
+import { randomInt } from 'node:crypto';
+import { getSigningSecret, validateResetRequest } from '../utils/authSecurity.js';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
@@ -6,7 +8,7 @@ import { mockDb } from '../utils/mockStore.js';
 
 const buildToken = (user) => {
   const payload = { id: user._id, email: user.email };
-  const secret = process.env.JWT_SECRET || 'studyhub-dev-secret';
+  const secret = getSigningSecret();
   return jwt.sign(payload, secret, { expiresIn: '7d' });
 };
 
@@ -133,31 +135,47 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-let otps = {}; // Mock OTP store
+const otps = new Map(); // Development-only, expiring OTP store
 
 export const forgotPassword = async (req, res) => {
+  // This repository has no email delivery integration for recovery.
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(503).json({ message: 'Password recovery is unavailable until email delivery is configured.' });
+  }
   const { email } = req.body;
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  otps[email] = otp;
-  console.log('\n' + '*'.repeat(50));
-  console.log(`[AUTH] FORGOT PASSWORD OTP FOR ${email}: ${otp}`);
-  console.log('*'.repeat(50) + '\n');
-  res.json({ message: 'OTP sent to your email' });
+  if (typeof email !== 'string' || !email.trim()) return res.status(400).json({ message: 'Email required' });
+  const normalizedEmail = email.trim().toLowerCase();
+  const otp = String(randomInt(100000, 1000000));
+  otps.set(normalizedEmail, { code: otp, expiresAt: Date.now() + 5 * 60 * 1000, attempts: 0 });
+  console.log(`[DEVELOPMENT ONLY] Password recovery OTP for ${normalizedEmail}: ${otp}`);
+  res.json({ message: 'Development OTP generated. Email delivery is not configured.' });
 };
 
 export const resetPassword = async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(503).json({ message: 'Password recovery is unavailable until email delivery is configured.' });
+  }
   const { email, otp, newPassword } = req.body;
-  if (otps[email] !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const record = otps.get(normalizedEmail);
+  if (!validateResetRequest(record, { email: normalizedEmail, otp, newPassword })) {
+    if (record) {
+      record.attempts += 1;
+      if (record.attempts >= 5 || record.expiresAt <= Date.now()) otps.delete(normalizedEmail);
+    }
+    return res.status(400).json({ message: 'Invalid or expired recovery request; password must contain at least 8 characters.' });
+  }
+  // Consume before asynchronous work so the code cannot be reused concurrently.
+  otps.delete(normalizedEmail);
   
   try {
     const hash = await bcrypt.hash(newPassword, 10);
     if (isDbConnected()) {
-      await User.findOneAndUpdate({ email }, { password: hash });
+      await User.findOneAndUpdate({ email: normalizedEmail }, { password: hash });
     } else {
-      const user = mockDb.users.findOne({ email });
+      const user = mockDb.users.findOne({ email: normalizedEmail });
       if (user) user.password = hash;
     }
-    delete otps[email];
     res.json({ message: 'Password reset successful' });
   } catch (err) {
     res.status(500).json({ message: err.message });
